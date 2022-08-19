@@ -1,5 +1,5 @@
 {
-  "name": "blog-creator",
+  "name": "notion-clone",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,9 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/react-beautiful-dnd": "^13.1.2",
+    "@types/react-icons": "^3.0.0",
     "next": "12.2.5",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-beautiful-dnd": "^13.1.0",
+    "react-dom": "18.2.0",
+    "react-draggable": "^4.4.5",
+    "react-icons": "^4.4.0",
+    "sass": "^1.54.4"
   },
   "devDependencies": {
     "@types/node": "18.7.5",
