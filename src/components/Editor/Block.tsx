@@ -1,108 +1,23 @@
-import { FC, KeyboardEventHandler, memo, useRef, useState } from "react";
-import { BlockInfo } from ".";
+import { FC, memo } from "react";
 import styles from "styles/components/Block.module.scss"
-import { useEffect } from "react";
-import { MdOutlineAdd, MdOutlineDragIndicator } from "react-icons/md";
 import { DraggableProvidedDragHandleProps } from "react-beautiful-dnd";
+import Input from "./Input";
+import { BlockInfo } from "utils/editor/block";
+import Dragger from "./Dragger";
 
 type Props = {
   blockInfo: BlockInfo,
   modifyBlock: (info: Partial<BlockInfo>) => void,
   focused: boolean,
   focus: () => void,
-  col: number,
-  setCol: (col: number) => void
-  colLen: number,
-  setColLen: (col: number) => void,
+  col: [number, number],
+  setCol: (col: [number, number]) => void
   handleProps?: DraggableProvidedDragHandleProps,
   selected: boolean,
   select: () => void
 }
 
-const Block: FC<Props> = ({ select, selected, handleProps, colLen, setColLen, col, setCol, blockInfo, modifyBlock, focused, focus }) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if(ref.current && focused)
-      ref.current.focus()
-  }, [focused])
-
-  useEffect(() => {
-    if(ref.current && ref.current.textContent != blockInfo.content) {
-      ref.current.textContent = blockInfo.content
-    }
-  }, [blockInfo.content])
-
-  const getRangeOffset = () => {
-    const sel = window.getSelection()
-    let val = [0, 0];
-
-    if(ref.current && sel && sel.rangeCount > 0) {
-      const range = sel.getRangeAt(0);
-      val = [range.startOffset, range.endOffset];
-    }
-
-    return val
-  }
-
-  const selectAll = () => {
-    if(ref.current && ref.current.firstChild && ref.current.textContent) {
-      const range = document.createRange();
-      const sel = window.getSelection();
-
-      range.selectNodeContents(ref.current)
-
-      range.setStart(ref.current.firstChild, 0);
-      range.setEnd(ref.current.firstChild, ref.current.textContent.length);
-
-      if(sel) {
-        sel.removeAllRanges();
-        sel.addRange(range);
-      } 
-    }
-  }
-
-  const onKeyUp = () => {
-    const [start, end] = getRangeOffset();
-    setCol(start);
-    setColLen(end-start)
-  } 
-
-  const setActualCol = () => {
-    if(ref.current && ref.current.firstChild && ref.current.textContent) {
-      const range = document.createRange();
-      const sel = window.getSelection();
-
-      range.selectNodeContents(ref.current)
-
-      if(col < 0)
-        col = 0;
-      if(col > ref.current.textContent.length)
-        col = ref.current.textContent.length - 1
-
-      if(colLen < 0)
-        colLen = 0
-      if(colLen > ref.current.textContent.length - col)
-        colLen = ref.current.textContent.length - col
-
-      range.setStart(ref.current.firstChild, col);
-      range.setEnd(ref.current.firstChild, col + colLen);
-
-      if(sel) {
-        sel.removeAllRanges();
-        sel.addRange(range);
-      } 
-    }
-  }
-
-  useEffect(() => {
-    const [start, end] = getRangeOffset();
-    if(col != start || colLen != end - start)
-      setActualCol();
-  }, [col])
-
-  console.log("update")
-
+const Block: FC<Props> = ({ select, selected, handleProps, col, setCol, blockInfo, modifyBlock, focused, focus }) => {
   return <div 
     className={`${styles.container} ${selected ? styles.selected : ""}`}
     onClick={e => e.stopPropagation()}
@@ -111,45 +26,20 @@ const Block: FC<Props> = ({ select, selected, handleProps, colLen, setColLen, co
       focus();
     }}
   >
-    <div className={styles.tool}>
-      <div className={`${styles.icon} ${styles.add}`}>
-        <MdOutlineAdd></MdOutlineAdd>
-      </div>
-      <div 
-        onMouseDown={e => {
-          e.stopPropagation();
-          select();
-        }}
-        className={`${styles.icon} ${styles.grab}`}
-        {...handleProps}
-      >
-        <MdOutlineDragIndicator></MdOutlineDragIndicator>
-      </div>
-    </div>
+    <Dragger
+        select={select}
+        handleProps={handleProps}
+    ></Dragger>
 
-    <div
-      tabIndex={1}
-      ref={ref} 
-      className={styles.input} 
-      contentEditable={true}
-      data-placeholder="Type '/' for commands"
-      onKeyUp={onKeyUp}
-      onKeyDown={e => {
-        if(e.key == "a" && e.ctrlKey) {
-          selectAll()
-          e.preventDefault()
-        }
-        else
-          onKeyUp()
-      }}
-      onInput={e => {
-        onKeyUp();
+    <Input 
+      col={col} 
+      setCol={setCol}
+      modifyBlock={modifyBlock}
+      blockInfo={blockInfo}
+      focus={focus}
+      focused={focused}
+    ></Input>
 
-        modifyBlock({
-          content: e.currentTarget.textContent || ""
-        })
-      }}
-    ></div>
   </div>
 }
 

@@ -4,29 +4,17 @@ import { FC } from "react"
 import styles from "styles/components/Editor.module.scss"
 import useStatePromise from "utils/useStatePromise"
 import { DragDropContext, Draggable, Droppable, DropResult, ResponderProvided } from "react-beautiful-dnd"
+import { BlockInfo, getNewBlock } from "utils/editor/block"
 
 type DivProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 type Props = DivProps;
-
-export type BlockInfo = {
-  id: string,
-  content: string
-}
-
-const genRanHex = (size: number) => [...Array(size)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
-
-const getNewBlock = (): BlockInfo => ({
-  id: genRanHex(16),
-  content: ""
-})
 
 const Editor: FC<Props> = ({ className, ...props }) => {
   const [dragging, setDragging] = useStatePromise(false);
   const [blocks, setBlocks] = useState<BlockInfo[]>([])
   const [row, setRow] = useStatePromise(-1);
-  const [col, setCol] = useStatePromise(-1);
+  const [col, setCol] = useStatePromise<[number, number]>([-1, 0]);
   const [selected, setSelected] = useStatePromise(-1);
-  const [colLen, setColLen] = useStatePromise(0);
 
   const dragStart = () => {
     setDragging(true);
@@ -34,7 +22,7 @@ const Editor: FC<Props> = ({ className, ...props }) => {
   
   const handleDrop = (result: DropResult, _provided: ResponderProvided) => {
     if (!result.destination) return;
-    var updatedList = [...blocks];
+    let updatedList = [...blocks];
     const [reorderedItem] = updatedList.splice(result.source.index, 1);
     updatedList.splice(result.destination.index, 0, reorderedItem);
     setDragging(false);
@@ -59,7 +47,7 @@ const Editor: FC<Props> = ({ className, ...props }) => {
       temp.splice(row, 1)
 
       setRow(row-1)
-      setCol(blocks[row-1].content.length || 0)
+      setCol([blocks[row-1].content.length || 0, 0])
       setBlocks(temp)
     }
   }
@@ -69,14 +57,16 @@ const Editor: FC<Props> = ({ className, ...props }) => {
 
     temp.splice(index, 0, getNewBlock())
 
+    const [colPos] = col;
+
     if(moveContentsDown && index > 0) {
-      temp[index].content += temp[index-1].content.substring(col)
-      temp[index-1].content = temp[index-1].content.substring(0, col)
+      temp[index].content += temp[index-1].content.substring(colPos)
+      temp[index-1].content = temp[index-1].content.substring(0, colPos)
     }
 
     setBlocks(temp);
     setRow(index);
-    setCol(0);
+    setCol([0, 0]);
 }
 
   const onClick: MouseEventHandler<HTMLDivElement> = e => {
@@ -88,13 +78,6 @@ const Editor: FC<Props> = ({ className, ...props }) => {
     }
   }
 
-  useEffect(() => {
-    if(row >= blocks.length)
-      setRow(blocks.length-1)
-    else if(row < -1)
-      setRow(-1)
-  }, [row])
-
   const onKeyDown: KeyboardEventHandler<HTMLDivElement> = e => {
     switch(e.key) {
       case "Enter":
@@ -102,13 +85,21 @@ const Editor: FC<Props> = ({ className, ...props }) => {
         e.preventDefault()
         break;
       case "Backspace":
-        if(col == 0 && colLen == 0) {
+        const [colPos, colLen] = col
+        if(colPos == 0 && colLen == 0) {
           deleteCurrentBlock();
           e.preventDefault();
         }
         break;
     }
   }
+
+  useEffect(() => {
+    if(row >= blocks.length)
+      setRow(blocks.length-1)
+    else if(row < -1)
+      setRow(-1)
+  }, [row])
 
   useEffect(() => {
     window.addEventListener("mousedown", () => {
@@ -149,8 +140,6 @@ const Editor: FC<Props> = ({ className, ...props }) => {
                       focus={() => setRow(key)}
                       col={col}
                       setCol={setCol}
-                      colLen={colLen}
-                      setColLen={setColLen}
                       handleProps={provided.dragHandleProps}
                       selected={selected == key}
                       select={() => setSelected(key)}
