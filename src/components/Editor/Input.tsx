@@ -1,17 +1,16 @@
 import { FC, useEffect, useRef } from "react";
 import styles from "styles/components/Block.module.scss"
-import { BlockInfo } from "utils/editor/block";
+import { Block } from "utils/editor/block";
 
 type Props = {
-  blockInfo: BlockInfo,
+  block: Block,
+  modifyBlock: (info: Partial<Block>) => void,
   focused: boolean,
-  focus: () => void,
   setCol: (col: [number, number]) => void,
   col: [number, number],
-  modifyBlock: (info: Partial<BlockInfo>) => void,
 }
 
-const Input: FC<Props> = ({ blockInfo, focused, focus, col, setCol, modifyBlock }) => {
+const Input: FC<Props> = ({ block, modifyBlock, focused, col, setCol }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const getRangeOffset = () => {
@@ -83,10 +82,10 @@ const Input: FC<Props> = ({ blockInfo, focused, focus, col, setCol, modifyBlock 
   }, [focused])
 
   useEffect(() => {
-    if(ref.current && ref.current.textContent != blockInfo.content) {
-      ref.current.textContent = blockInfo.content
+    if(ref.current && ref.current.textContent != block.content) {
+      ref.current.textContent = block.content 
     }
-  }, [blockInfo.content])
+  }, [block.content])
 
   useEffect(() => {
     const [start, end] = getRangeOffset();
@@ -99,9 +98,10 @@ const Input: FC<Props> = ({ blockInfo, focused, focus, col, setCol, modifyBlock 
   return <div
     tabIndex={1}
     ref={ref} 
-    className={styles.input} 
+    className={`${styles.input} `} 
     contentEditable={true}
-    data-placeholder="Type '/' for commands"
+    data-placeholder={block.getPlaceholder()}
+    onClick={onKeyUp}
     onKeyUp={onKeyUp}
     onKeyDown={e => {
       if(e.key == "a" && e.ctrlKey) {
@@ -113,7 +113,6 @@ const Input: FC<Props> = ({ blockInfo, focused, focus, col, setCol, modifyBlock 
     }}
     onInput={e => {
       onKeyUp();
-
       modifyBlock({
         content: e.currentTarget.textContent || ""
       })

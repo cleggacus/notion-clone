@@ -7,12 +7,16 @@ $tool-width: 55px;
 }
 
 .container {
+  position: relative;
   display: flex;
   padding: 0 $tool-width 0 0;
+  font-size: 1em;
+  align-items: center;
 
   .input {
     cursor: text;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     color: var(--fg-1);
     outline: none;
     padding: 4px 5px;
@@ -30,6 +34,7 @@ $tool-width: 55px;
     opacity: 0;
     transition: opacity 0.3s ease;
     position: relative;
+    min-width: $tool-width;
     width: $tool-width;
     display: flex;
     padding: 2px 5px 0 0;
@@ -60,10 +65,121 @@ $tool-width: 55px;
       background-color: var(--bg-2);
     }
   }
+
+  .menuContainer {
+    cursor: default;
+    position: absolute;
+    bottom: 0;
+    left: $tool-width;
+    outline: none;
+
+    .menu {
+      position: absolute;
+      z-index: 999;
+      top: 0;
+      left: 0;
+      width: 270px;
+      max-height: 350px;
+      background-color: var(--bg-1);
+      box-shadow: 0px 0px 10px #0004;
+      border-radius: 5px;
+      overflow-y: auto;
+
+      input {
+        outline: none;
+        border: none;
+        padding: 7px 14px;
+      }
+
+      .item:hover {
+        .inner {
+          background-color: var(--bg-2);
+        }
+      }
+      
+      .item {
+        cursor: pointer;
+        padding: 10px;
+
+        .inner {
+          transition: background-color 0.3s ease;
+          border-radius: 5px;
+          padding: 5px;
+          display: flex;
+          width: 100%;;
+
+          .icon {
+            padding: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            background-color: var(--bg-1);
+
+            svg {
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+          .desc {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 10px;
+
+            h3 {
+              margin: 0;
+              font-weight: 500;
+              font-size: 1em;
+            }
+
+            p{
+              margin: 0;
+              font-size: 0.7em;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 .container:hover {
   .tool {
     opacity: 1;
+  }
+}
+
+.h3 .input {
+  font-size: 1.25em;
+  font-weight: 700;
+}
+
+.h2 .input {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.h1 .input {
+  font-size: 2em;
+  font-weight: 700;
+}
+
+.p .input {
+  font-size: 1em;
+}
+
+.title {
+  padding: 0 $tool-width !important;
+  margin: 0 0 10px 0;
+
+  .input {
+    font-size: 2.5em;
+    font-weight: 700;
+  }
+
+  .input[data-placeholder]:empty:before{
+    content: attr(data-placeholder);
+    color: var(--fg-2);
   }
 }

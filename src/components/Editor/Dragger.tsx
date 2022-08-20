@@ -5,14 +5,19 @@ import styles from "styles/components/Block.module.scss"
 
 type Props = {
   handleProps?: DraggableProvidedDragHandleProps,
-  select: () => void
+  select: () => void,
+  setShowMenu: (showMenu: boolean) => void
 }
 
-const Dragger: FC<Props> = ({ select, handleProps }) => {
+const Dragger: FC<Props> = ({ select, handleProps, setShowMenu }) => {
   return <div className={styles.tool}>
-    <div className={`${styles.icon} ${styles.add}`}>
+    <div 
+      onClick={() => setShowMenu(true)} 
+      className={`${styles.icon} ${styles.add}`}
+    >
       <MdOutlineAdd></MdOutlineAdd>
     </div>
+
     <div 
       onMouseDown={e => {
         e.stopPropagation();
